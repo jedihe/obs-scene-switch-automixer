@@ -1,3 +1,12 @@
+-- PARAMETERS
+bg_music_src = 'Mic/Aux'
+main_mix_src = 'Desktop Audio'
+scn_in = 'fadein'
+scn_in_next = 'Main-Intro'
+scn_out = 'fadeout'
+scn_out_next = 'Main-Closing'
+
+
 obs = obslua
 
 local _pprint = require('vendor.pprint')
@@ -51,13 +60,6 @@ function setAudioState(src_name, volume, muted, relative)
 
     return newVolume
 end
-
-bg_music_src = 'Mic/Aux'
-main_mix_src = 'Desktop Audio'
-scn_in = 'fadein'
-scn_in_next = 'Main-Intro'
-scn_out = 'fadeout'
-scn_out_next = 'Main-Closing'
 
 local transition_in_states = {'start', 'bg_music_fadeout', 'finish'}
 local transition_out_states = {'start', 'main_mix_fadeout', 'finish'}
