@@ -12,7 +12,8 @@ activated. Currently supports 2 auto-mixing sequences, in and out:
 ## Usage
 
 - Edit obs-scene-switch-automixer.lua, update variables with parameters,
-  setting proper values for your particular scene; save and then add to OBS scripts.
+  setting proper values for the current scene collection; save and then add to
+  OBS scripts.
 
 ## Notes
 
