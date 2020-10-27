@@ -2,9 +2,9 @@
 bg_music_src = 'Mic/Aux'
 main_mix_src = 'Desktop Audio'
 scn_in = 'fadein'
-scn_in_next = 'Main-Intro'
+scn_in_target = 'Main-Intro'
 scn_out = 'fadeout'
-scn_out_next = 'Main-Closing'
+scn_out_target = 'Main-Closing'
 
 
 obs = obslua
@@ -91,13 +91,17 @@ end
 -- dumpSortedAttrs(map(sources, obs.obs_source_get_name), 'named sources')
 -- dumpSortedAttrs(unversioned_sources, 'unversioned sources')
 -- obs.source_list_release(sources)
+-- local scenes = obs.obs_frontend_get_scenes()
+-- dumpSortedAttrs(scenes, 'scenes')
+-- dumpSortedAttrs(map(scenes, obs.obs_source_get_name), 'named scenes')
+-- obs.source_list_release(scenes)
 
 function transition_in()
     obs.remove_current_callback()
     transition_state = transition_state or 'start'
 
     if transition_state == 'start' then
-        switchToScene(scn_in_next)
+        switchToScene(scn_in_target)
         setAudioState(main_mix_src, 1, false, false)
         transition_state = 'bg_music_fadeout'
         obs.timer_add(transition_in, 50)
@@ -128,7 +132,7 @@ function transition_out()
         end
         obs.timer_add(transition_out, 50)
     elseif transition_state == 'finish' then
-        switchToScene(scn_out_next)
+        switchToScene(scn_out_target)
         setAudioState(main_mix_src, 1, true, false)
         transition_state = false
     end
@@ -149,6 +153,88 @@ function sceneChange(event)
 
         obs.obs_source_release(scene)
     end
+end
+
+function _get_source_names(allowed_unversioned_ids)
+-- TODO: implement, with ability to pass a list of unversioned_ids to match against.
+    local sources = obs.obs_enum_sources()
+    if sources ~= nil then
+        for _, source in ipairs(sources) do
+            source_id = obs.obs_source_get_unversioned_id(source)
+            if source_id == "text_gdiplus" or source_id == "text_ft2_source" then
+                local name = obs.obs_source_get_name(source)
+                obs.obs_property_list_add_string(p, name, name)
+            end
+        end
+    end
+    obs.source_list_release(sources)
+end
+
+function script_properties()
+    local props = obs.obs_properties_create()
+    
+    local bg_music_src_prop =
+        obs.obs_properties_add_list(
+            props,'bg_music_src','Background music',
+            obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
+
+    local main_mix_src_prop =
+        obs.obs_properties_add_list(
+            props,'main_mix_src','Main Mix',
+            obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
+
+    local scn_in_prop =
+        obs.obs_properties_add_list(
+            props, 'scn_in', 'In - Trigger',
+            obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
+--  obs.obs_property_list_add_string(litloc,  "Lectern", "Lectern")
+--  obs.obs_property_list_add_string(litloc,  "Pulpit", "Pulpit")
+
+    local scn_in_target_prop =
+        obs.obs_properties_add_list(
+            props, 'scn_in_target', 'In - Target',
+            obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
+--  obs.obs_property_list_add_string(wormus,  "Soloist", "Soloist")
+--  obs.obs_property_list_add_string(wormus,  "Pre-Recorded Media", "Pre-Recorded Media")
+--  obs.obs_property_list_add_string(wormus,  "Choir", "Choir")
+
+    local scn_out_prop =
+       obs.obs_properties_add_list(
+           props, 'scn_out', 'Out - Trigger',
+           obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)
+--  obs.obs_property_list_add_string(sololoc,  "Lectern", "Lectern")
+--  obs.obs_property_list_add_string(sololoc,  "Pulpit", "Pulpit")
+
+    local scn_out_target_prop =
+        obs.obs_properties_add_list(
+            props,'scn_out_target','Out - Target',
+            obs.OBS_COMBO_TYPE_EDITABLE, obs.OBS_COMBO_FORMAT_STRING)   
+
+ 
+	return props
+end
+
+function script_update(settings)
+-- TODO: set parameters from user selection.
+--  bg_music_src = obs.obs_data_get_string(settings, "bg_music_src")
+--  main_mix_src = obs.obs_data_get_string(settings, "main_mix_src")
+--  scn_in = obs.obs_data_get_string(settings, "scn_in")
+--  scn_in_target = obs.obs_data_get_string(settings, "scn_in_target")
+--  scn_out = obs.obs_data_get_string(settings, "scn_out")
+--  scn_out_target = obs.obs_data_get_string(settings, "scn_out_target")
+end
+
+function _set_default(settings, key, val)
+    obs.obs_data_set_default_string(settings, key, val)
+end
+-- A function named script_defaults will be called to set the default settings
+function script_defaults(settings)
+    obs.obs_data_set_default_string(settings, "bg_music_src", "")
+    obs.obs_data_set_default_string(settings, "main_mix_src", "")
+    obs.obs_data_set_default_string(settings, "scn_in", "")
+    obs.obs_data_set_default_string(settings, "scn_in_target", "")
+    obs.obs_data_set_default_string(settings, "scn_out", "")
+    obs.obs_data_set_default_string(settings, "scn_out_target", "")
 end
 
 function script_load(settings)
